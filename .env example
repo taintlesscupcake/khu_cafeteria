@@ -1,0 +1,5 @@
+# rename this file to .env
+NAME=name
+PASSWORD=password
+DB_PATH=db/
+PORT=3000

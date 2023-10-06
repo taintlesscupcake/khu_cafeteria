@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -120,5 +121,5 @@ func Router(app *fiber.App, browser *rod.Browser, db *badger.DB) {
 
 	app.Static("/img", "./img")
 
-	app.Listen(":30081")
+	app.Listen(":" + os.Getenv("PORT"))
 }
