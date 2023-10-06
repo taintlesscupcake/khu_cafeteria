@@ -26,8 +26,8 @@ func main() {
 	app := fiber.New()
 	browser := rod.New().MustConnect().NoDefaultDevice()
 
-	router.Router(app, browser, db)
+	go scheduler.AutoCrawler(browser, db)
 
-	scheduler.AutoCrawler(browser, db)
+	router.Router(app, browser, db)
 
 }
