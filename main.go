@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/taintlesscupcake/khu_cafeteria/router"
+	"github.com/taintlesscupcake/khu_cafeteria/scheduler"
 )
 
 func main() {
@@ -26,5 +27,7 @@ func main() {
 	browser := rod.New().MustConnect().NoDefaultDevice()
 
 	router.Router(app, browser, db)
+
+	scheduler.AutoCrawler(browser, db)
 
 }
