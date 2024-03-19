@@ -80,7 +80,11 @@ func Crawl(db *badger.DB, browser *rod.Browser) {
 
 			newPage := browser.MustPage(href).MustWaitLoad().MustWaitStable()
 
-			el := newPage.MustElement("#contents > div > div > div > div > div > div.row.contents.clearfix").MustElement("img")
+			el, err := newPage.MustElement("#contents > div > div > div > div > div > div.row.contents.clearfix").Element("img")
+			if err != nil {
+				fmt.Println("Error getting image:", err)
+				continue
+			}
 
 			_ = utils.OutputFile("img/"+id+".jpg", el.MustResource())
 
