@@ -2,7 +2,7 @@ package webcrawl
 
 import (
 	"fmt"
-	"os"
+	// "os"
 	"regexp"
 	"strings"
 	"time"
@@ -34,35 +34,20 @@ func formatDateString(input string) (string, string, string) {
 
 func Crawl(db *badger.DB, browser *rod.Browser) {
 
-	// Login to the site
-
-	page := browser.MustPage("https://www.khu.ac.kr/kor/info/login.do").MustWindowFullscreen()
-
-	page.MustElement("#username").MustInput(os.Getenv("NAME"))
-	page.MustElement("#password").MustInput(os.Getenv("PASSWORD"))
-
-	page.MustElement("#loginForm > div > div > button").MustClick()
+	page := browser.MustPage("https://www.khu.ac.kr/kor/user/bbs/BMSR00040/list.do?menuNo=200283&catId=137").MustWindowFullscreen()
 
 	page.MustWaitLoad().MustWaitStable()
 
-	// Login End
+	list := page.MustElements(".tal")
 
-	// Go to the site
-
-	page.MustNavigate("https://www.khu.ac.kr/kor/forum/list.do?type=RESTAURANT&category=INTL&page=1")
-
-	page.MustWaitLoad().MustWaitStable()
-
-	// Get all tr elements
-
-	list := page.MustElements(".col02")
+	print(len(list))
 
 	for i, item := range list {
-		// Check it has .txt06 class
 
-		if item.MustHas(".txt06") {
-			id := item.MustElement(".txt06").MustText()
+		if item.MustHas("a") {
+			id := item.MustElement("a").MustText()
 			id = strings.TrimSpace(id)
+			print(id)
 			start, end, id := formatDateString(id)
 
 			err := db.View(func(txn *badger.Txn) error {
@@ -75,12 +60,13 @@ func Crawl(db *badger.DB, browser *rod.Browser) {
 				continue
 			}
 
-			href := item.MustElement("a").MustProperty("href").String()
-			fmt.Println(i, id, href)
+			newPage := browser.MustPage("https://www.khu.ac.kr/kor/user/bbs/BMSR00040/list.do?menuNo=200283&catId=137").MustWaitLoad().MustWaitStable()
 
-			newPage := browser.MustPage(href).MustWaitLoad().MustWaitStable()
+			newPage.MustElements(".tal")[i].MustElement("a").MustClick()
 
-			el, err := newPage.MustElement("#contents > div > div > div > div > div > div.row.contents.clearfix").Element("img")
+			newPage.MustWaitLoad().MustWaitStable()
+
+			el, err := newPage.MustElement(".row.contents.clearfix").Element("img")
 			if err != nil {
 				fmt.Println("Error getting image:", err)
 				continue
@@ -129,4 +115,5 @@ func Crawl(db *badger.DB, browser *rod.Browser) {
 	}
 
 	page.MustClose()
+	browser.MustClose()
 }
